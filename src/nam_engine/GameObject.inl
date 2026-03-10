@@ -82,4 +82,23 @@ namespace nam
 				};
 		}
 	}
+	template<typename T>
+	inline void GameObject::SetController(T* owner, void(T::* Controller)())
+	{
+		if (HasComponent<ControllerComponent>() == false)
+		{
+			ControllerComponent controller;
+			controller.OnController = [owner, Controller]() {
+				(owner->*Controller)();
+				};
+			AddComponent(controller);
+		}
+		else
+		{
+			ControllerComponent& controller = GetComponent<ControllerComponent>();
+			controller.OnController = [owner, Controller]() {
+				(owner->*Controller)();
+				};
+		}
+	}
 }

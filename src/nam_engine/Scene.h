@@ -36,7 +36,7 @@ namespace nam
 		void ResetScene();
 
 		template<typename T>
-		T* CreateGameObject();
+		T* CreateGameObject(bool active = true);
 
 		void DestroyGameObject(GameObject* gameObject);
 

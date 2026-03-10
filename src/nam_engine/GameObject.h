@@ -11,6 +11,7 @@ namespace nam
 		Entity m_entity;
 		Scene* mp_scene;
 		int m_tag;
+
 	public:
 
 		GameObject();
@@ -18,11 +19,13 @@ namespace nam
 		void Start();
 		void Update();
 		void Collider(u32 self, u32 other, const CollisionInfo& collisionInfo);
+		void Controller();
 
 		virtual void OnInit();
 		virtual void OnStart();
 		virtual void OnUpdate();
 		virtual void OnCollision(u32 self, u32 other, const CollisionInfo& collisionInfo);
+		virtual void OnController();
 		virtual void OnDestroy();
 
 		void SetActiveEntity(bool active);
@@ -38,14 +41,10 @@ namespace nam
 		void SetBehavior();
 		void SetBoxCollider();
 		void SetSphereCollider();
+		void SetController();
 
 		Entity* GetEntity();
 		Scene* GetScene();
-
-		void SetTag(int tag);
-		bool IsTag(int tag) const;
-		int GetTag() const;
-		
 	private:
 		void Destroy();
 
@@ -55,6 +54,8 @@ namespace nam
 		void SetBoxCollider(T* owner, void(T::* Collide)(u32 self, u32 other, const CollisionInfo& collisionInfo));
 		template<typename T>
 		void SetSphereCollider(T* owner, void(T::* Collide)(u32 self, u32 other, const CollisionInfo& collisionInfo));
+		template<typename T>
+		void SetController(T* owner, void(T::* Controller)());
 
 		friend class App;
 		friend class Scene;

@@ -22,17 +22,14 @@ namespace nam
 		p_sprite->SetDrawLayer( (std::numeric_limits<int>::min)() );
 		AddComponent(srComp);
 
-		DirectX::XMFLOAT3 pos = { windowSize.x * 0.5f, windowSize.y * 0.5f, 0 };
-		SetWorldPosition(pos);
+		TransformComponent tc;
+		tc.SetWorldPosition({ windowSize.x * 0.5f, windowSize.y * 0.5f, 0 });
+		AddComponent<TransformComponent>(tc);
 
 		m_waitingTimer.Init(0.1f);
 		m_fadingTimer.Init(m_fadingSpeed);
 
 		SetBehavior();
-	}
-
-	void LoadingScreen::OnStart()
-	{
 	}
 
 	void LoadingScreen::OnUpdate()
@@ -69,21 +66,12 @@ namespace nam
 
 			float targetTime = m_fadingTimer.GetTargetTime();
 
-			_ASSERT(targetTime != 0);
+			assert(targetTime != 0);
 
 			float ratio = m_fadingTimer.GetProgress() / targetTime;
 
 			p_sprite->SetColor({ 1, 1, 1, 1 - ratio });
 		}
-	}
-
-	void LoadingScreen::OnCollision(u32 self, u32 other, const CollisionInfo& collisionInfo)
-	{
-
-	}
-
-	void LoadingScreen::OnDestroy()
-	{
 	}
 
 	void LoadingScreen::Activate(float minTimeToWait)

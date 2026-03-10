@@ -9,6 +9,7 @@
 #include "UISystem.h"
 #include "BehaviorSystem.h"
 #include "LightManagerSystem.h"
+#include <ControllerSystem.h>
 
 #include "CameraManagerSystem.h"
 #include "CameraComponent.h"
@@ -155,15 +156,16 @@ namespace nam
 		m_sceneManager.SetEcs(&m_ecs);
 		m_sceneManager.Start();
 
-		m_ecs.AddSystem<RenderSystem>();
+		m_ecs.AddSystem<StateMachineSystem>();
+		m_ecs.AddSystem<BehaviorSystem>();
+		m_ecs.AddSystem<ControllerSystem>();
 		m_ecs.AddSystem<PhysicSystem>();
 		m_ecs.AddSystem<ColliderSystem>();
 		m_ecs.AddSystem<CameraManagerSystem>();
 		m_ecs.AddSystem<ParticleSystem>();
 		m_ecs.AddSystem<UISystem>();
-		m_ecs.AddSystem<BehaviorSystem>();
 		m_ecs.AddSystem<LightManagerSystem>();
-		m_ecs.AddSystem<StateMachineSystem>();
+		m_ecs.AddSystem<RenderSystem>();
 
 		CreateCamera();
 		StartCamera();
@@ -234,7 +236,6 @@ namespace nam
 	void App::Update()
 	{
 		m_chrono.Update();
-		Input::UpdateKeyStates();
 		m_ecs.Update();
 
 		m_sceneManager.CleanUpdate();

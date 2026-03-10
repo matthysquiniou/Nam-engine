@@ -38,6 +38,7 @@
 #include "BoxColliderComponent.h"
 #include "PhysicComponent.h"
 #include "TextRendererComponent.h"
+#include "ControllerComponent.h"
 #include "LightComponent.h"
 #include "EcsConfig.h"
 #include "Entity.h"

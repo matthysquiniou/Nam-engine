@@ -34,13 +34,16 @@ namespace nam
 		OnCollision(self, other, collisionInfo);
 	}
 
-//private
+	void GameObject::Controller()
+	{
+		OnController();
+	}
+
 	void GameObject::Destroy()
 	{
 		OnDestroy();
 		mp_scene->DestroyEntity(m_entity);
 	}
-//public
 
 	void GameObject::OnInit()
 	{
@@ -55,6 +58,10 @@ namespace nam
 	}
 
 	void GameObject::OnCollision(u32 self, u32 other, const CollisionInfo& collisionInfo)
+	{
+	}
+
+	void GameObject::OnController()
 	{
 	}
 
@@ -87,6 +94,11 @@ namespace nam
 		SetSphereCollider(this, &GameObject::Collider);
 	}
 
+	void GameObject::SetController()
+	{
+		SetController(this, &GameObject::Controller);
+	}
+
 	Entity* GameObject::GetEntity()
 	{
 		return &m_entity;
@@ -95,20 +107,5 @@ namespace nam
 	Scene* GameObject::GetScene()
 	{
 		return mp_scene;
-	}
-
-	void GameObject::SetTag(int tag)
-	{
-		m_tag = tag;
-	}
-
-	bool GameObject::IsTag(int tag) const
-	{
-		return m_tag == tag;
-	}
-
-	int GameObject::GetTag() const
-	{
-		return m_tag;
 	}
 }
