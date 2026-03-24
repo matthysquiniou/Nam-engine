@@ -80,10 +80,15 @@ namespace nam
 		void LookToWorld(const DirectX::XMFLOAT3& direction);
 		void LookToWorld(const DirectX::XMFLOAT3& direction, const DirectX::XMFLOAT3& up);
 
+		void SetWorldUp(const DirectX::XMFLOAT3& up);
+		void SetWorldRight(const DirectX::XMFLOAT3& right);
+
 		void RotateAroundLocal(const DirectX::XMFLOAT3& point, const DirectX::XMFLOAT3& axis, float angle);
 		void RotateAroundWorld(const DirectX::XMFLOAT3& point, const DirectX::XMFLOAT3& axis, float angle);
 
 		DirectX::XMFLOAT3 GetWorldForward();
+		DirectX::XMFLOAT3 GetWorldRight();
+		DirectX::XMFLOAT3 GetWorldUp();
 
 		const DirectX::XMFLOAT4X4& GetLocalMatrix();
 		const DirectX::XMFLOAT4X4& GetWorldMatrix();

@@ -16,6 +16,10 @@ namespace nam
 		//Using a existing Mesh
 		void SetMeshInstance(Mesh* p_mesh);
 
+		void SetMeshTag(size meshTag);
+
+		void SetMeshInstanceFromTag(size meshTag);
+
 		//Delete the Mesh member
 		void DeleteMeshInstance();
 	};

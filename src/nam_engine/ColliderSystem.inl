@@ -15,6 +15,8 @@ inline void nam::ColliderSystem::CheckCollision(TransformComponent& transform1, 
     collisionInfo.OnCollision2 = box2.OnCollision;
     collisionInfo.m_noIntersectionPush1 = box1.m_noIntersectionPush;
     collisionInfo.m_noIntersectionPush2 = box2.m_noIntersectionPush;
+    collisionInfo.m_tag1 = box1.m_tag;
+    collisionInfo.m_tag2 = box2.m_tag;
 
     collisions.push_back(collisionInfo);
 }

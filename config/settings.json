@@ -19,9 +19,7 @@
                 "3A240DCE-6733-2F0B-27D9-271B1C421433",
                 "3A3E5DB1-1574-1F06-6A2E-21D17D8638B8",
                 "3A932153-2BC9-2AF4-01C0-30A039A20F6B",
-                "3ACA6B16-4E14-68E8-2EB4-356308514D07",
-                "48CC61A6-683E-4232-0791-287272C14D2D",
-                "48DF5D90-0AEF-762E-7950-047B3BB40892"
+                "3ACA6B16-4E14-68E8-2EB4-356308514D07"
             ],
             "name": "nam_core",
             "property-lib": true,
@@ -49,9 +47,7 @@
             "dependents": [
                 "3A3E5DB1-1574-1F06-6A2E-21D17D8638B8",
                 "3A932153-2BC9-2AF4-01C0-30A039A20F6B",
-                "3ACA6B16-4E14-68E8-2EB4-356308514D07",
-                "48CC61A6-683E-4232-0791-287272C14D2D",
-                "48DF5D90-0AEF-762E-7950-047B3BB40892"
+                "3ACA6B16-4E14-68E8-2EB4-356308514D07"
             ],
             "name": "nam_render",
             "property-lib": true,
@@ -84,9 +80,7 @@
             ],
             "dependents": [
                 "3A932153-2BC9-2AF4-01C0-30A039A20F6B",
-                "3ACA6B16-4E14-68E8-2EB4-356308514D07",
-                "48CC61A6-683E-4232-0791-287272C14D2D",
-                "48DF5D90-0AEF-762E-7950-047B3BB40892"
+                "3ACA6B16-4E14-68E8-2EB4-356308514D07"
             ],
             "name": "nam_engine",
             "property-lib": true,
@@ -159,72 +153,6 @@
             "property-pch": true,
             "property-vcpkg": false,
             "property-window": true
-        },
-        "48CC61A6-683E-4232-0791-287272C14D2D": {
-            "config-debug": {
-                "additionalDependencies": [],
-              "additionalIncludeDirectories": [
-                "$(SolutionDir)../src/nam_render/",
-                "$(SolutionDir)../src/nam_core/",
-                "$(SolutionDir)../src/nam_engine/"
-              ],
-                "additionalLibraryDirectories": [],
-                "preprocessorDefinitions": []
-            },
-            "config-release": {
-                "additionalDependencies": [],
-              "additionalIncludeDirectories": [
-                "$(SolutionDir)../src/nam_render/",
-                "$(SolutionDir)../src/nam_core/",
-                "$(SolutionDir)../src/nam_engine/"
-              ],
-                "additionalLibraryDirectories": [],
-                "preprocessorDefinitions": []
-            },
-            "dependencies": [
-                "39DF1C19-2DC7-791A-59BB-64FE1CF10453",
-                "3A3E5DB1-1574-1F06-6A2E-21D17D8638B8",
-                "3A240DCE-6733-2F0B-27D9-271B1C421433"
-            ],
-            "dependents": [],
-            "name": "nam_sandbox_render",
-            "property-lib": false,
-            "property-pch": true,
-            "property-vcpkg": false,
-            "property-window": true
-        },
-        "48DF5D90-0AEF-762E-7950-047B3BB40892": {
-            "config-debug": {
-                "additionalDependencies": [],
-              "additionalIncludeDirectories": [
-                "$(SolutionDir)../src/nam_render/",
-                "$(SolutionDir)../src/nam_core/",
-                "$(SolutionDir)../src/nam_engine/"
-              ],
-                "additionalLibraryDirectories": [],
-                "preprocessorDefinitions": []
-            },
-            "config-release": {
-                "additionalDependencies": [],
-              "additionalIncludeDirectories": [
-                "$(SolutionDir)../src/nam_render/",
-                "$(SolutionDir)../src/nam_core/",
-                "$(SolutionDir)../src/nam_engine/"
-              ],
-                "additionalLibraryDirectories": [],
-                "preprocessorDefinitions": []
-            },
-            "dependencies": [
-                "39DF1C19-2DC7-791A-59BB-64FE1CF10453",
-                "3A3E5DB1-1574-1F06-6A2E-21D17D8638B8",
-                "3A240DCE-6733-2F0B-27D9-271B1C421433"
-            ],
-            "dependents": [],
-            "name": "nam_sandbox_engine",
-            "property-lib": false,
-            "property-pch": true,
-            "property-vcpkg": false,
-            "property-window": true
         }
     },
     "projects_name_to_guid": {
@@ -232,9 +160,7 @@
         "nam_engine": "3A3E5DB1-1574-1F06-6A2E-21D17D8638B8",
         "nam_game": "3ACA6B16-4E14-68E8-2EB4-356308514D07",
         "nam_render": "3A240DCE-6733-2F0B-27D9-271B1C421433",
-        "nam_sandbox": "3A932153-2BC9-2AF4-01C0-30A039A20F6B",
-        "nam_sandbox_engine": "48DF5D90-0AEF-762E-7950-047B3BB40892",
-        "nam_sandbox_render": "48CC61A6-683E-4232-0791-287272C14D2D"
+        "nam_sandbox": "3A932153-2BC9-2AF4-01C0-30A039A20F6B"
     },
     "solution_guid": "378A18AB-4BB0-4797-0C6C-6DFE6C0630DF",
     "solution_name": "nam_engine",

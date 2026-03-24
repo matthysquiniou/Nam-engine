@@ -9,11 +9,9 @@ namespace nam
 	class SparseSet : public ISparseSet
 	{
 	private:
-		Vector<u32> m_sparse;
 		Vector<SparseSetPage<DenseType>> m_pages;
 		Vector<PageIndex> m_entityToPageIndex;
 
-		static constexpr u32 NO_ENTITY = (std::numeric_limits<u32>::max)();
 		static constexpr u32 INVALID_PAGE = (std::numeric_limits<u32>::max)();
 
 	public:

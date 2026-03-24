@@ -16,39 +16,86 @@ namespace nam
         Vector<CollisionInfo> collisions;
 
         m_spatialHash.Clear();
+
+        // update colliders
+        ecs.ForEach<SphereColliderComponent, TransformComponent, MeshRendererComponent>(
+            [&](u32 e, SphereColliderComponent& s, TransformComponent& t, MeshRendererComponent& m) {
+                if (!s.m_basedOnMesh)
+                    return;
+                t.UpdateWorldData();
+                s.UpdateSphereBox(t, m, m_updateId);
+            }
+        );
+
         ecs.ForEach<BoxColliderComponent, TransformComponent, MeshRendererComponent>(
             [&](u32 e, BoxColliderComponent& b, TransformComponent& t, MeshRendererComponent& m) {
+                if (!b.m_basedOnMesh)
+                    return;
                 t.UpdateWorldData();
                 b.UpdateObbBox(t, m, m_updateId);
+            }
+        );
+
+
+        ecs.ForEach<SphereColliderComponent, TransformComponent>(
+            [&](u32 e, SphereColliderComponent& s, TransformComponent& t) {
+                if (s.m_basedOnMesh)
+                    return;
+                t.UpdateWorldData();
+                s.UpdateSphereBox(t, m_updateId);
+            }
+        );
+
+        ecs.ForEach<BoxColliderComponent, TransformComponent>(
+            [&](u32 e, BoxColliderComponent& b, TransformComponent& t) {
+                if (b.m_basedOnMesh)
+                    return;
+                t.UpdateWorldData();
+                b.UpdateObbBox(t, m_updateId);
+            }
+        );
+
+        // add to spacial
+        ecs.ForEach<SphereColliderComponent>(
+            [&](u32 e, SphereColliderComponent& s) {
+                if (s.m_dirty)
+                    return;
+                m_spatialHash.Insert(e, s.m_box);
+            }
+        );
+        ecs.ForEach<BoxColliderComponent>(
+            [&](u32 e, BoxColliderComponent& b) {
+                if (b.m_dirty)
+                    return;
                 m_spatialHash.Insert(e, b.m_box);
             }
         );
 
-        ecs.ForEach<SphereColliderComponent, TransformComponent, MeshRendererComponent>(
-            [&](u32 e, SphereColliderComponent& s, TransformComponent& t, MeshRendererComponent& m) {
-                t.UpdateWorldData();
-                s.UpdateSphereBox(t, m, m_updateId);
-                m_spatialHash.Insert(e, s.m_box);
-            }
-        );
 
         ecs.ForEach<BoxColliderComponent, TransformComponent, MeshRendererComponent>(
             [&](u32 e1, BoxColliderComponent& b1, TransformComponent& t1, MeshRendererComponent& m) {
                 Vector<u32> nearby;
-                m_spatialHash.GetNearby(e1, t1.GetWorldPosition(), nearby);
+                m_spatialHash.GetNearby(e1, b1.m_box, nearby);
 
                 for (u32 e2 : nearby) {
                     if (e1 >= e2) continue; 
-
                     if (ecs.HasComponent<BoxColliderComponent>(e2)) {
                         BoxColliderComponent& b2 = ecs.GetComponent<BoxColliderComponent>(e2);
+
+                        if (!ShouldCollide(b1.m_shouldCollideWith, b2.m_shouldCollideWith, b1.m_tag, b2.m_tag))
+                            continue;
+
                         TransformComponent& t2 = ecs.GetComponent<TransformComponent>(e2);
                         CheckCollision(t1, t2, b1, b2, e1, e2, collisions);
                     }
                     else if (ecs.HasComponent<SphereColliderComponent>(e2)) {
                         SphereColliderComponent& s1 = ecs.GetComponent<SphereColliderComponent>(e2);
+
+                        if (!ShouldCollide(b1.m_shouldCollideWith, s1.m_shouldCollideWith, b1.m_tag, s1.m_tag))
+                            continue;
+
                         TransformComponent& t2 = ecs.GetComponent<TransformComponent>(e2);
-                        CheckCollision(t1, t2, b1, s1, e1, e2, collisions); // pass box then sphere 
+                        CheckCollision(t1, t2, b1, s1, e1, e2, collisions);
                     }
                 }
             }
@@ -57,18 +104,26 @@ namespace nam
         ecs.ForEach<SphereColliderComponent, TransformComponent, MeshRendererComponent>(
             [&](u32 e1, SphereColliderComponent& s1, TransformComponent& t1, MeshRendererComponent& m) {
                 Vector<u32> nearby;
-                m_spatialHash.GetNearby(e1, t1.GetWorldPosition(), nearby);
+                m_spatialHash.GetNearby(e1, s1.m_box, nearby);
 
                 for (u32 e2 : nearby) {
                     if (e1 >= e2) continue;
 
                     if (ecs.HasComponent<BoxColliderComponent>(e2)) {
                         BoxColliderComponent& b1 = ecs.GetComponent<BoxColliderComponent>(e2);
+
+                        if (!ShouldCollide(s1.m_shouldCollideWith, b1.m_shouldCollideWith, s1.m_tag, b1.m_tag))
+                            continue;
+
                         TransformComponent& t2 = ecs.GetComponent<TransformComponent>(e2);
-                        CheckCollision(t1, t2, b1, s1, e1, e2, collisions);  // pass box then sphere 
+                        CheckCollision(t1, t2, s1, b1, e1, e2, collisions); 
                     }
                     else if (ecs.HasComponent<SphereColliderComponent>(e2)) {
                         SphereColliderComponent& s2 = ecs.GetComponent<SphereColliderComponent>(e2);
+
+                        if (!ShouldCollide(s1.m_shouldCollideWith, s2.m_shouldCollideWith, s1.m_tag, s2.m_tag))
+                            continue;
+
                         TransformComponent& t2 = ecs.GetComponent<TransformComponent>(e2);
                         CheckCollision(t1, t2, s1, s2, e1, e2, collisions);
                     }
@@ -79,6 +134,26 @@ namespace nam
         ProcessCollisionsIntersection(ecs, collisions);
         ProcessCollisionsOnCollide(collisions);
 	}
+
+    bool ColliderSystem::ShouldCollide(UnSet<size> shouldCollideWith1, UnSet<size> shouldCollideWith2, size tag1, size tag2)
+    {
+        if (shouldCollideWith1.empty() && shouldCollideWith2.empty())
+            return true;
+        
+        bool hasTag1 = shouldCollideWith2.find(tag1) != shouldCollideWith2.end();
+
+        if (shouldCollideWith1.empty() && hasTag1)
+            return true;
+
+        bool hasTag2 = shouldCollideWith1.find(tag2) != shouldCollideWith1.end();
+
+        if (shouldCollideWith2.empty() && hasTag2)
+            return true;
+        if (hasTag1 && hasTag2)
+            return true;
+
+        return false;
+    }
 
     CollisionInfo ColliderSystem::CalculateCollisionInfo(const DirectX::BoundingOrientedBox& box1, const DirectX::BoundingOrientedBox& box2)
     {
@@ -133,7 +208,7 @@ namespace nam
 
             if (penetration < -1e-4f) 
             {
-                info.penetrationDepth = 0;
+                info.m_penetrationDepth = 0;
                 return info;
             }
 
@@ -150,7 +225,7 @@ namespace nam
             }
         }
 
-        info.penetrationDepth = minPenetration;
+        info.m_penetrationDepth = minPenetration;
         XMStoreFloat3(&info.m_normal, XMVector3Normalize(bestAxis));
 
         XMVECTOR contact = XMVectorLerp(center1, center2, 0.5f);
@@ -194,7 +269,7 @@ namespace nam
             XMStoreFloat3(&info.m_normal, XMVectorSet(0, 1, 0, 0));
         }
 
-        info.penetrationDepth = sphere.Radius - distance;
+        info.m_penetrationDepth = sphere.Radius - distance;
 
         if (distance > 0) {
             XMVECTOR contact = XMVectorAdd(worldClosest,
@@ -209,6 +284,15 @@ namespace nam
             info.m_contactPoint = sphere.Center;
         }
 
+        return info;
+    }
+
+    CollisionInfo ColliderSystem::CalculateCollisionInfo(const BoundingSphere& sphere, const BoundingOrientedBox& box)
+    {
+        CollisionInfo info = CalculateCollisionInfo(box, sphere);
+        XMVECTOR vNormal = XMLoadFloat3(&info.m_normal);
+        vNormal = XMVectorScale(vNormal, -1.f);
+        XMStoreFloat3(&info.m_normal, vNormal);
         return info;
     }
 
@@ -229,12 +313,12 @@ namespace nam
             XMStoreFloat3(&info.m_normal, XMVectorSet(1, 0, 0, 0));
         
 
-        info.penetrationDepth = radiusSum - distance;
+        info.m_penetrationDepth = radiusSum - distance;
 
         XMVECTOR contact = XMVectorAdd(center1,
             XMVectorMultiply(
                 XMLoadFloat3(&info.m_normal),
-                XMVectorReplicate(sphere1.Radius - info.penetrationDepth * 0.5f)
+                XMVectorReplicate(sphere1.Radius - info.m_penetrationDepth * 0.5f)
             )
         );
         XMStoreFloat3(&info.m_contactPoint, contact);
@@ -263,7 +347,7 @@ namespace nam
             bool hasPhysics2 = ecs.HasComponent<PhysicComponent>(entity2);
 
             XMVECTOR normal = XMLoadFloat3(&collision.m_normal);
-            float depth = collision.penetrationDepth;
+            float depth = collision.m_penetrationDepth;
 
             XMFLOAT3 newPos1;
             XMFLOAT3 newPos2;
@@ -298,10 +382,12 @@ namespace nam
                 if (velAlongNormal > 0) {
                     float restitution = (physic1.m_collisionRestitution * physic2.m_mass + physic2.m_collisionRestitution * physic1.m_mass) / totalMass;
 
-                    float impulse = -(1 + restitution) * velAlongNormal / totalMass;
+                    float invMass1 = 1.0f / physic1.m_mass;
+                    float invMass2 = 1.0f / physic2.m_mass;
+                    float impulse = -(1 + restitution) * velAlongNormal / (invMass1 + invMass2);
 
-                    XMVECTOR impulse1 = XMVectorMultiply(normal, XMVectorReplicate(impulse * ratio1));
-                    XMVECTOR impulse2 = XMVectorMultiply(normal, XMVectorReplicate(impulse * ratio2));
+                    XMVECTOR impulse1 = XMVectorMultiply(normal, XMVectorReplicate(impulse * invMass1));
+                    XMVECTOR impulse2 = XMVectorMultiply(normal, XMVectorReplicate(impulse * invMass2));
 
                     vel1 = XMVectorAdd(vel1, impulse1);
                     vel2 = XMVectorSubtract(vel2, impulse2); 
@@ -350,7 +436,24 @@ namespace nam
                     XMStoreFloat3(&physic2.m_velocity, vel2);
                 }
             }
-            // No repulse if both no physics
+            else 
+            {
+                float halfDepth = depth * 0.5f;
+
+                XMVECTOR sep = XMVectorMultiply(normal, XMVectorReplicate(halfDepth));
+
+                XMVECTOR pos1 = XMLoadFloat3(&currentPosition1);
+                XMVECTOR pos2 = XMLoadFloat3(&currentPosition2);
+
+                XMVECTOR newPosVec1 = XMVectorSubtract(pos1, sep);
+                XMVECTOR newPosVec2 = XMVectorAdd(pos2, sep);
+
+                XMStoreFloat3(&newPos1, newPosVec1);
+                XMStoreFloat3(&newPos2, newPosVec2);
+
+                transform1->SetWorldPosition(newPos1);
+                transform2->SetWorldPosition(newPos2);
+            }
         }
 	}
 
@@ -360,14 +463,14 @@ namespace nam
         {
             CollisionInfo& collision = collisions[i];
 
-            u32 entity1 = collision.m_entity1;
-            u32 entity2 = collision.m_entity2;
+            SingleCollisionInfo entity1Sci = collision.GetSingleInfo(collision.m_entity1);
+            SingleCollisionInfo entity2Sci = collision.GetSingleInfo(collision.m_entity2);
 
             if (collision.OnCollision1)
-                collision.OnCollision1(entity1, entity2, collision);
+                collision.OnCollision1(entity1Sci, entity2Sci);
 
             if (collision.OnCollision2)
-                collision.OnCollision2(entity2, entity1, collision);
+                collision.OnCollision2(entity2Sci, entity1Sci);
         }
 	}
 }

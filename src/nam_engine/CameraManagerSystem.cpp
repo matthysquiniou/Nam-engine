@@ -15,33 +15,40 @@ namespace nam
 	void CameraManagerSystem::Update(Ecs& ecs)
 	{
 		// 3D
-		Handle3D();
+		Handle3D(ecs);
 
 		// 2D
 		Handle2D();
 	}
 
-	void CameraManagerSystem::Handle3D()
+	void CameraManagerSystem::Handle3D(Ecs& ecs)
 	{
-		GameObject* pGameObjectCam = App::Get()->GetCamera();
+		TransformComponent* tc = nullptr;
+		CameraComponent* cc = nullptr;
 
-		if (pGameObjectCam == nullptr)
+		ecs.ForEach<CameraComponent, TransformComponent>(
+			[&](u32 e, CameraComponent& c, TransformComponent& t) {
+				if (tc != nullptr || cc != nullptr)
+					return;
+				tc = &t;
+				cc = &c;
+			}
+		);
+
+		if (tc == nullptr || cc == nullptr)
 			return;
 
-		TransformComponent& camTransform = pGameObjectCam->GetComponent<TransformComponent>();
-		camTransform.UpdateWorldData();
-
-		CameraComponent& cam = pGameObjectCam->GetComponent<CameraComponent>();
+		tc->UpdateWorldData();
 
 		CBufferViewProj3D viewProj;
-		viewProj.m_cameraPos = camTransform.GetWorldPosition();
+		viewProj.m_cameraPos = tc->GetWorldPosition();
 
-		DirectX::XMMATRIX camWorld = XMLoadFloat4x4(&camTransform.GetWorldMatrix());
+		DirectX::XMMATRIX camWorld = XMLoadFloat4x4(&tc->GetWorldMatrix());
 		DirectX::XMMATRIX viewMat = XMMatrixInverse(nullptr, camWorld); // view = inverse of world
 
 		XMStoreFloat4x4(&viewProj.m_view, XMMatrixTranspose(viewMat));
 
-		DirectX::XMStoreFloat4x4(&viewProj.m_proj, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&cam.m_proj)));
+		DirectX::XMStoreFloat4x4(&viewProj.m_proj, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&cc->m_proj)));
 		viewProj.time = static_cast<float>(App::Get()->GetChrono().GetScaledTotalTime());
 		viewProj.deltaTime = static_cast<float>(App::Get()->GetChrono().GetScaledDeltaTime());
 

@@ -422,6 +422,68 @@ namespace nam
         SetWorldRotation(worldQuat);
     }
 
+    void TransformComponent::SetWorldUp(const DirectX::XMFLOAT3& up)
+    {
+        XMVECTOR newUp = XMVector3Normalize(XMLoadFloat3(&up));
+
+        XMFLOAT3 forwardFloat = GetForward(); 
+        XMVECTOR forward = XMVector3Normalize(XMLoadFloat3(&forwardFloat));
+
+        if (XMVector3NearEqual(newUp, forward, XMVectorReplicate(0.999f)))
+        {
+            forward = XMVectorSet(0, 0, 1, 0);
+        }
+
+        XMVECTOR right = XMVector3Cross(newUp, forward);
+        right = XMVector3Normalize(right);
+
+        forward = XMVector3Cross(right, newUp);
+
+        XMMATRIX rotMatrix;
+        rotMatrix.r[0] = right;
+        rotMatrix.r[1] = newUp;
+        rotMatrix.r[2] = forward;
+        rotMatrix.r[3] = XMVectorSet(0, 0, 0, 1);
+
+        XMVECTOR quat = XMQuaternionRotationMatrix(rotMatrix);
+
+        XMFLOAT4 worldQuat;
+        XMStoreFloat4(&worldQuat, quat);
+
+        SetWorldRotation(worldQuat);
+    }
+
+    void TransformComponent::SetWorldRight(const DirectX::XMFLOAT3& right)
+    {
+        XMVECTOR newRight = XMVector3Normalize(XMLoadFloat3(&right));
+
+        XMFLOAT3 forwardFloat = GetForward(); 
+        XMVECTOR forward = XMVector3Normalize(XMLoadFloat3(&forwardFloat));
+
+        if (XMVector3NearEqual(newRight, forward, XMVectorReplicate(0.999f)))
+        {
+            forward = XMVectorSet(0, 0, 1, 0); 
+        }
+
+        XMVECTOR up = XMVector3Cross(forward, newRight);
+        up = XMVector3Normalize(up);
+
+        forward = XMVector3Cross(newRight, up);
+
+        XMMATRIX rotMatrix;
+        rotMatrix.r[0] = newRight;
+        rotMatrix.r[1] = up;
+        rotMatrix.r[2] = forward;
+        rotMatrix.r[3] = XMVectorSet(0, 0, 0, 1);
+
+        XMVECTOR quat = XMQuaternionRotationMatrix(rotMatrix);
+
+        XMFLOAT4 worldQuat;
+        XMStoreFloat4(&worldQuat, quat);
+
+        SetWorldRotation(worldQuat);
+    }
+
     void TransformComponent::RotateAroundLocal(const XMFLOAT3& point, const XMFLOAT3& axis, float angle)
     {
         XMVECTOR p = XMLoadFloat3(&point);
@@ -477,6 +539,34 @@ namespace nam
     {
         UpdateWorldData();
         return GetForward();
+    }
+
+    DirectX::XMFLOAT3 TransformComponent::GetWorldRight()
+    {
+        UpdateDirectionVectors();
+
+        XMVECTOR quat = XMLoadFloat4(&m_worldRotation);
+        XMVECTOR right = XMVectorSet(1, 0, 0, 0); 
+        right = XMVector3Rotate(right, quat);
+        right = XMVector3Normalize(right);
+
+        XMFLOAT3 result;
+        XMStoreFloat3(&result, right);
+        return result;
+    }
+
+    DirectX::XMFLOAT3 TransformComponent::GetWorldUp()
+    {
+        UpdateDirectionVectors();
+
+        XMVECTOR quat = XMLoadFloat4(&m_worldRotation);
+        XMVECTOR up = XMVectorSet(0, 1, 0, 0);
+        up = XMVector3Rotate(up, quat);
+        up = XMVector3Normalize(up);
+
+        XMFLOAT3 result;
+        XMStoreFloat3(&result, up);
+        return result;
     }
 
     const XMFLOAT4X4& TransformComponent::GetLocalMatrix()

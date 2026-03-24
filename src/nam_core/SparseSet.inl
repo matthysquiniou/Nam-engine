@@ -6,7 +6,6 @@ namespace nam
 	template<typename DenseType>
 	inline SparseSet<DenseType>::SparseSet(size sparseSize)
 	{
-		m_sparse.resize(sparseSize, NO_ENTITY);
 		m_entityToPageIndex.resize(sparseSize, { INVALID_PAGE, 0 });
 	}
 
@@ -39,7 +38,6 @@ namespace nam
 		page.m_entities[localIndex] = id;
 		page.m_count++;
 
-		m_sparse[id] = pageIndex * SparseSetPage<DenseType>::PAGE_SIZE + localIndex;
 		m_entityToPageIndex[id] = { pageIndex, localIndex };
 
 		return true;
@@ -65,7 +63,6 @@ namespace nam
 		}
 
 		page.m_count--;
-		m_sparse[id] = NO_ENTITY;
 		m_entityToPageIndex[id] = { INVALID_PAGE, 0 };
 
 		return true;
@@ -74,8 +71,8 @@ namespace nam
 	template<typename DenseType>
 	inline bool SparseSet<DenseType>::Has(const u32 id) const
 	{
-		assert(id < m_sparse.size() && "sparse out of range");
-		return m_sparse[id] != NO_ENTITY;
+		assert(id < m_entityToPageIndex.size());
+		return m_entityToPageIndex[id].m_pageIndex != INVALID_PAGE;
 	}
 
 	template<typename DenseType>

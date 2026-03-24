@@ -10,26 +10,39 @@ namespace nam
 	private:
 		Entity m_entity;
 		Scene* mp_scene;
-		int m_tag;
+		Ecs* mp_ecs;
 
 	public:
 
 		GameObject();
 		void Init(Scene* scene, Entity entity);
 		void Start();
-		void Update();
-		void Collider(u32 self, u32 other, const CollisionInfo& collisionInfo);
-		void Controller();
+
+		void Update();// behaviorComponent
+
+		void Collider(const SingleCollisionInfo& self, const SingleCollisionInfo& other); // colliderComponent
+
+		void Controller();// controllerComponent
+
+		// buttonComponent
+		void Hovered();
+		void Click();
+		void Left();
 
 		virtual void OnInit();
 		virtual void OnStart();
-		virtual void OnUpdate();
-		virtual void OnCollision(u32 self, u32 other, const CollisionInfo& collisionInfo);
-		virtual void OnController();
 		virtual void OnDestroy();
 
-		void SetActiveEntity(bool active);
-		void DestroyGameObject();
+		virtual void OnUpdate(); // behaviorComponent
+		virtual void OnCollision(const SingleCollisionInfo& self, const SingleCollisionInfo& other); // colliderComponent
+		virtual void OnController(); // controllerComponent
+
+		// buttonComponent
+		virtual void OnHovered(); 
+		virtual void OnClick();
+		virtual void OnLeft();
+
+		void SetActive(bool active);
 
 		template<typename Component>
 		void AddComponent(const Component& data);
@@ -38,24 +51,27 @@ namespace nam
 		template<typename Component>
 		Component& GetComponent();
 
-		void SetBehavior();
-		void SetBoxCollider();
-		void SetSphereCollider();
-		void SetController();
+		BehaviorComponent& SetBehavior();
+		BoxColliderComponent& SetBoxCollider();
+		SphereColliderComponent& SetSphereCollider();
+		ControllerComponent& SetController();
+		ButtonComponent& SetButton();
 
-		Entity* GetEntity();
+		Entity GetEntity();
 		Scene* GetScene();
 	private:
 		void Destroy();
 
 		template<typename T>
-		void SetFunctionUpdate(T* owner, void (T::* Update)());
+		BehaviorComponent& SetFunctionUpdate(T* owner, void (T::* Update)());
 		template<typename T>
-		void SetBoxCollider(T* owner, void(T::* Collide)(u32 self, u32 other, const CollisionInfo& collisionInfo));
+		BoxColliderComponent& SetBoxCollider(T* owner, void(T::* Collide)(const SingleCollisionInfo& self, const SingleCollisionInfo& other));
 		template<typename T>
-		void SetSphereCollider(T* owner, void(T::* Collide)(u32 self, u32 other, const CollisionInfo& collisionInfo));
+		SphereColliderComponent& SetSphereCollider(T* owner, void(T::* Collide)(const SingleCollisionInfo& self, const SingleCollisionInfo& other));
 		template<typename T>
-		void SetController(T* owner, void(T::* Controller)());
+		ControllerComponent& SetController(T* owner, void(T::* Controller)());
+		template<typename T>
+		ButtonComponent& SetButton(T* owner);
 
 		friend class App;
 		friend class Scene;

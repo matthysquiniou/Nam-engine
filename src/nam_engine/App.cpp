@@ -153,7 +153,6 @@ namespace nam
 		Render->InitDirectX3D();
 		Resize();
 
-		m_sceneManager.SetEcs(&m_ecs);
 		m_sceneManager.Start();
 
 		m_ecs.AddSystem<StateMachineSystem>();
@@ -167,16 +166,13 @@ namespace nam
 		m_ecs.AddSystem<LightManagerSystem>();
 		m_ecs.AddSystem<RenderSystem>();
 
-		CreateCamera();
-		StartCamera();
-
 		//Loading Screen first frame
-		Scene* p_loadingScene = m_sceneManager.CreateScene(size(-1));
+		Scene& loadingScene = m_sceneManager.CreateOrGetScene<Scene>(size(-1));
 
-		mp_loadingScreen = p_loadingScene->CreateGameObject<LoadingScreen>();
+		mp_loadingScreen = &loadingScene.CreateGameObject<LoadingScreen>();
 
-		p_loadingScene->Start();
-		AddCurrentScene(p_loadingScene);
+		loadingScene.Start();
+
 
 		Render->BuildMinimal();
 
@@ -188,8 +184,6 @@ namespace nam
 		Render->BuildOthers();
 		LoadTextures();
 		Render->EndInit();
-
-		CameraDefaultSettings();
 	}
 
 	void App::Run()
@@ -244,60 +238,13 @@ namespace nam
 
 	void App::Resize()
 	{
-		if (mp_camera)
-		{
-			CameraComponent& cam = mp_camera->GetComponent<CameraComponent>();
-			cam.UpdateAspectRatio(m_window.m_clientWidth, m_window.m_clientHeight);
-		}
+		m_ecs.ForEach<CameraComponent>(
+			[&](u32 e, CameraComponent& c) {
+				c.UpdateAspectRatio(m_window.m_clientWidth, m_window.m_clientHeight);
+			}
+		);
 
 		Render->OnResize();
-	}
-
-	void App::CreateCamera()
-	{
-		if (mp_camera != nullptr)
-		{
-			delete mp_camera;
-		}
-
-		mp_camera = new GameObject();
-		mp_camera->m_entity = m_ecs.CreateEntity();
-		mp_camera->mp_scene = nullptr;
-
-		mp_camera->Start();
-	}
-
-	void App::StartCamera()
-	{
-		mp_camera->AddComponent(TransformComponent());
-		mp_camera->AddComponent(CameraComponent());
-	}
-
-	void App::CameraDefaultSettings()
-	{
-		if (mp_camera == nullptr)
-			return;
-
-		//si n'a aucun components
-		if (mp_camera->HasComponent<TransformComponent>() == false)
-		{
-			//creer tout les components
-			TransformComponent transform = TransformComponent();
-			transform.SetWorldPosition(XMFLOAT3(0.f, 0.f, 0.f));
-			mp_camera->AddComponent(transform);
-
-			//save le component
-			//mp_camera->mp_transform = &(mp_camera->GetComponent<TransformComponent>());
-			mp_camera->AddComponent(CameraComponent());
-		}
-
-		TransformComponent& camTransform = mp_camera->GetComponent<TransformComponent>();
-
-		XMFLOAT3 pos = { 0.f, 5.f, 0.f };
-
-		camTransform.SetWorldPosition(pos);
-		camTransform.SetWorldYPR(0.f, 0.f, 0.f);
-
 	}
 
 	void App::ToggleDebugConsole(bool state)
@@ -317,138 +264,14 @@ namespace nam
 		}
 	}
 
-	void App::DestroyGameObject(GameObject* gameObject, Scene* scene)
+	void App::ClearScene(size scene)
 	{
-		scene->DestroyGameObject(gameObject);
+		m_sceneManager.ClearScene(scene);
 	}
 
-	void App::DestroyGameObject(GameObject* gameObject, u32 idScene)
+	void App::SetSceneActive(size scene, bool active)
 	{
-		m_sceneManager.GetScene(idScene)->DestroyGameObject(gameObject);
-	}
-
-	void App::SetActiveGameObject(Scene* scene, GameObject* gameObject, bool active)
-	{
-		scene->SetActiveEntity(*gameObject->GetEntity(), active);
-	}
-
-	void App::SetActiveGameObject(u32 idScene, GameObject* gameObject, bool active)
-	{
-		m_sceneManager.GetScene(idScene)->SetActiveEntity(*gameObject->GetEntity(), active);
-	}
-
-	void App::SetActiveEntity(Scene* scene, Entity& entity, bool active)
-	{
-		scene->SetActiveEntity(entity, active);
-	}
-
-	void App::SetActiveEntity(u32 idScene, Entity& entity, bool active)
-	{
-		m_sceneManager.GetScene(idScene)->SetActiveEntity(entity, active);
-	}
-
-	GameObject* App::GetGameObject(Scene* scene, u32 idEntity)
-	{
-		return scene->GetGameObject(idEntity);
-	}
-
-	GameObject* App::GetGameObject(Scene* scene, Entity& entity)
-	{
-		return scene->GetGameObject(entity);
-	}
-
-	GameObject* App::GetGameObject(u32 idScene, u32 idEntity)
-	{
-		return m_sceneManager.GetScene(idScene)->GetGameObject(idEntity);
-	}
-
-	GameObject* App::GetGameObject(u32 idScene, Entity& entity)
-	{
-		return m_sceneManager.GetScene(idScene)->GetGameObject(entity);
-	}
-
-	GameObject* App::GetGameObject(u32 idEntity)
-	{
-		return m_sceneManager.GetGameObjectInGame(idEntity);
-	}
-
-	GameObject* App::GetGameObject(Entity& entity)
-	{
-		return m_sceneManager.GetGameObjectInGame(entity);
-	}
-
-	Scene* App::CreateScene(size sceneTag)
-	{
-		return m_sceneManager.CreateScene(sceneTag);
-	}
-
-	void App::DestroyScene(Scene* scene)
-	{
-		m_sceneManager.DestroyScene(scene);
-	}
-
-	void App::AddCurrentScene(u32 idScene)
-	{
-		m_sceneManager.AddCurrentScene(idScene);
-	}
-
-	void App::AddCurrentScene(Scene* scene)
-	{
-		m_sceneManager.AddCurrentScene(scene);
-	}
-
-	void App::AddCurrentScene(size sceneTag)
-	{
-		m_sceneManager.AddCurrentScene(sceneTag);
-	}
-
-	void App::RemoveCurrentScene(Scene* scene)
-	{
-		m_sceneManager.RemoveCurrentScene(scene);
-	}
-
-	void App::RemoveCurrentScene(u32 idScene)
-	{
-		m_sceneManager.RemoveCurrentScene(idScene);
-	}
-
-	void App::RemoveCurrentScene(size sceneTag)
-	{
-		m_sceneManager.RemoveCurrentScene(sceneTag);
-	}
-
-	void App::SwitchCurrentScene(Scene* sceneClose, Scene* sceneOpen)
-	{
-		m_sceneManager.SwitchCurrentScene(sceneClose, sceneOpen);
-	}
-
-	void App::SwitchCurrentScene(u32 idSceneClose, u32 idSceneOpen)
-	{
-		m_sceneManager.SwitchCurrentScene(idSceneClose, idSceneOpen);
-	}
-
-	void App::SwitchCurrentScene(size sceneTag1, size sceneTag2)
-	{
-		m_sceneManager.SwitchCurrentScene(sceneTag1, sceneTag2);
-	}
-
-	Scene* App::GetScene(u32 idScene)
-	{
-		return m_sceneManager.GetScene(idScene);
-	}
-
-	Scene* App::GetScene(Entity& entity)
-	{
-		UnMap<u32, Scene*> allScene = m_sceneManager.GetAllScene();
-		for (auto it1 = allScene.begin(); it1 != allScene.end(); it1++)
-		{
-			Entity entityFind = it1->second->GetEntity(entity.m_id);
-			if (entityFind.m_id != -1)
-			{
-				return it1->second;
-			}
-		}
-		return nullptr;
+		m_sceneManager.SetActiveScene(scene, active);
 	}
 
 	Window& App::GetWindow()
@@ -456,29 +279,9 @@ namespace nam
 		return m_window;
 	}
 
-	GameObject* App::GetCamera()
-	{
-		return mp_camera;
-	}
-
 	Ecs& App::GetEcs()
 	{
 		return m_ecs;
-	}
-
-	Mesh* App::CreateEmptyMesh()
-	{
-		return Render->GetRenderItemManager().CreateRenderItem<Mesh>();
-	}
-
-	Sprite* App::CreateEmptySprite()
-	{
-		return Render->GetRenderItemManager().CreateRenderItem<Sprite>();;
-	}
-
-	Text* App::CreateEmptyText()
-	{
-		return Render->GetRenderItemManager().CreateRenderItem<Text>();;
 	}
 
 	LightManager& App::GetLightManager()

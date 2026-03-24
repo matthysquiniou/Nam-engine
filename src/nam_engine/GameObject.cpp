@@ -9,7 +9,7 @@ namespace nam
 	{
 		mp_scene = nullptr;
 		m_entity = Entity();
-		m_tag = -1;
+		mp_ecs = &App::Get()->GetEcs();
 	}
 
 	void GameObject::Init(Scene* scene, Entity entity)
@@ -29,9 +29,9 @@ namespace nam
 		OnUpdate();
 	}
 
-	void GameObject::Collider(u32 self, u32 other, const CollisionInfo& collisionInfo)
+	void GameObject::Collider(const SingleCollisionInfo& self, const SingleCollisionInfo& other)
 	{
-		OnCollision(self, other, collisionInfo);
+		OnCollision(self, other);
 	}
 
 	void GameObject::Controller()
@@ -39,10 +39,25 @@ namespace nam
 		OnController();
 	}
 
+	void GameObject::Hovered()
+	{
+		OnHovered();
+	}
+
+	void GameObject::Click()
+	{
+		OnClick();
+	}
+
+	void GameObject::Left()
+	{
+		OnLeft();
+	}
+
 	void GameObject::Destroy()
 	{
 		OnDestroy();
-		mp_scene->DestroyEntity(m_entity);
+		mp_scene->DestroyGameObject(*this);
 	}
 
 	void GameObject::OnInit()
@@ -57,7 +72,7 @@ namespace nam
 	{
 	}
 
-	void GameObject::OnCollision(u32 self, u32 other, const CollisionInfo& collisionInfo)
+	void GameObject::OnCollision(const SingleCollisionInfo& self, const SingleCollisionInfo& other)
 	{
 	}
 
@@ -65,43 +80,55 @@ namespace nam
 	{
 	}
 
+	void GameObject::OnHovered()
+	{
+	}
+
+	void GameObject::OnClick()
+	{
+	}
+
+	void GameObject::OnLeft()
+	{
+	}
+
 	void GameObject::OnDestroy()
 	{
 	}
 
-	void GameObject::SetActiveEntity(bool active)
+	void GameObject::SetActive(bool active)
 	{
-		mp_scene->SetActiveEntity(m_entity, active);
+		mp_ecs->SetEntityActive(m_entity,active);
 	}
 
-	void GameObject::DestroyGameObject()
+	BehaviorComponent& GameObject::SetBehavior()
 	{
-		mp_scene->DestroyGameObject(this);
+		return SetFunctionUpdate(this, &GameObject::Update);
 	}
 
-	void GameObject::SetBehavior()
+	BoxColliderComponent& GameObject::SetBoxCollider()
 	{
-		SetFunctionUpdate(this, &GameObject::Update);
+		return SetBoxCollider(this, &GameObject::Collider);
 	}
 
-	void GameObject::SetBoxCollider()
+	SphereColliderComponent& GameObject::SetSphereCollider()
 	{
-		SetBoxCollider(this, &GameObject::Collider);
+		return SetSphereCollider(this, &GameObject::Collider);
 	}
 
-	void GameObject::SetSphereCollider()
+	ControllerComponent& GameObject::SetController()
 	{
-		SetSphereCollider(this, &GameObject::Collider);
+		return SetController(this, &GameObject::Controller);
 	}
 
-	void GameObject::SetController()
+	ButtonComponent& GameObject::SetButton()
 	{
-		SetController(this, &GameObject::Controller);
+		return SetButton(this);
 	}
 
-	Entity* GameObject::GetEntity()
+	Entity GameObject::GetEntity()
 	{
-		return &m_entity;
+		return m_entity;
 	}
 
 	Scene* GameObject::GetScene()

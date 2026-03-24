@@ -27,6 +27,19 @@ namespace nam
 
 		mp_sprite = p_sprite;
 	}
+	
+	void SpriteRendererComponent::SetSpriteTag(size spriteTag)
+	{
+		if (mp_sprite == nullptr)
+			return;
+
+		Render->GetRenderItemManager().SetRenderItemTag(mp_sprite, spriteTag);
+	}
+
+	void SpriteRendererComponent::SetSpriteInstanceFromTag(size spriteTag)
+	{
+		mp_sprite = static_cast<Sprite*>(Render->GetRenderItemManager().GetRenderItemOfTag(spriteTag));
+	}
 
 	void SpriteRendererComponent::DeleteSpriteInstance()
 	{

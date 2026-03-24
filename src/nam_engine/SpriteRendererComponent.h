@@ -14,6 +14,10 @@ namespace nam
 		//Using a existing Sprite
 		void SetSpriteInstance(Sprite* p_sprite);
 
+		void SetSpriteTag(size spriteTag);
+
+		void SetSpriteInstanceFromTag(size spriteTag);
+
 		//Delete the Sprite member
 		void DeleteSpriteInstance();
 	};

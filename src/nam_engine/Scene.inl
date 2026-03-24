@@ -4,7 +4,7 @@
 namespace nam
 {
 	template<typename T>
-	inline T* Scene::CreateGameObject(bool active)
+	inline T& Scene::CreateGameObject(bool active)
 	{
 		static_assert(std::is_base_of<GameObject, T>::value, "T must derive from GameObject");
 
@@ -13,12 +13,11 @@ namespace nam
 		Entity entity = mp_ecs->CreateEntity();
 
 		gameObject->Init(this, entity);
-		gameObject->SetActiveEntity(active);
+		gameObject->SetActive(active);
 
-		int idEntity = entity.m_id;
-		m_allGameObject[idEntity] = gameObject;
-		(*mp_allGameObjectInAllScene)[idEntity] = gameObject;
-		return gameObject;
+		u32 idEntity = entity.m_id;
+		mp_gameObjects->Add(idEntity, gameObject);
+		return *static_cast<T*>(gameObject);
 	}
 
 }

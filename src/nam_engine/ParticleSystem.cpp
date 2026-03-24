@@ -16,7 +16,11 @@ namespace nam
 		Vector<CBufferParticleCompute> particlesToSpawn;
 
 		ecs.ForEach<TransformComponent, ParticleEmitersComponent>([&](uint32_t entity, TransformComponent& transform, ParticleEmitersComponent& emiters) {
-			transform.UpdateWorldData();
+			
+            if (MAX_PARTICLES_SPAWNS_PER_FRAME >= particlesToSpawn.size())
+                return;
+            
+            transform.UpdateWorldData();
 
             for (size_t i = 0; i < emiters.m_maxXYZ.size(); i++)
             {
@@ -66,6 +70,9 @@ namespace nam
                     particlesToSpawn.push_back(particle);
 
                     emiters.m_spawnAdvancement[i] -= 1.0f;
+
+                    if (MAX_PARTICLES_SPAWNS_PER_FRAME >= particlesToSpawn.size())
+                        return;
                 }
             }
 		});

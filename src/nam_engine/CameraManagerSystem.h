@@ -9,7 +9,7 @@ namespace nam
 	{
 	public:
 		void Update(Ecs& ecs) override;
-		void Handle3D();
+		void Handle3D(Ecs& ecs);
 		void Handle2D();
 	};
 }
